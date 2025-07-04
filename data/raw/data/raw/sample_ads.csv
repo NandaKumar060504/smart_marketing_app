@@ -1,0 +1,8 @@
+timestamp,age,device,time_of_day,ad_id,ad_title,price,action
+2025-07-03T08:00:22.795641,21,Mobile,Morning,181,Clearance Sale,49.99,clicked
+2025-07-03T08:00:27.135992,21,Mobile,Morning,566,Limited Offer,49.99,ignored
+2025-07-03T08:00:29.450506,21,Mobile,Morning,648,Mega Discount,49.99,purchased
+2025-07-03T08:00:32.641903,21,Mobile,Morning,199,New Collection,49.99,clicked
+2025-07-03T08:00:39.254968,21,Desktop,Afternoon,426,Buy 1 Get 1,49.99,clicked
+2025-07-03T08:00:40.845137,21,Desktop,Afternoon,360,Just Dropped,49.99,ignored
+2025-07-03T08:00:41.633974,21,Desktop,Afternoon,923,Trending Now,49.99,purchased

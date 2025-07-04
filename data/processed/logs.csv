@@ -1,0 +1,13 @@
+age,device,time_of_day,ad_id,action,reward
+30,Mobile,Morning,1,clicked,1
+30,Mobile,Morning,2,ignored,0
+30,Mobile,Afternoon,3,purchased,1
+30,Mobile,Afternoon,4,clicked,1
+30,Mobile,Morning,5,clicked,1
+30,Mobile,Morning,6,ignored,0
+30,Mobile,Morning,7,purchased,1
+30,Mobile,Morning,8,clicked,1
+18,Mobile,Morning,9,clicked,1
+18,Mobile,Morning,10,ignored,0
+18,Mobile,Morning,11,purchased,1
+30,Mobile,Morning,12,clicked,1
