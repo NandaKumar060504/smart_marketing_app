@@ -91,7 +91,7 @@ st.title("📈 AI-Powered Ad Targeting")
 # ads_df = load_ads()
 ads_df = load_ads("data/raw/sample_ads.csv")
 
-feedback_path = "/Users/nandakumart/Nanda_Kumar_T/smart_marketing_app/data/processed/logs.csv"
+feedback_path = "data/processed/logs.csv"
 feedback_df = pd.read_csv(feedback_path) if os.path.exists(feedback_path) else None
 
 # Sidebar – user input
