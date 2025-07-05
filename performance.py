@@ -12,7 +12,7 @@ st.title("📊 Live Ad Performance Dashboard")
 st_autorefresh(interval=10 * 1000, key="data_refresh")
 
 # Load feedback data
-LOG_PATH = "/Users/nandakumart/Nanda_Kumar_T/smart_marketing_app/data/processed/logs.csv"
+LOG_PATH = "data/processed/logs.csv"
 
 if not os.path.exists(LOG_PATH):
     st.warning("No interactions logged yet.")
