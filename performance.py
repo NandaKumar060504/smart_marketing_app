@@ -1,38 +1,44 @@
 import streamlit as st
 import pandas as pd
 import os
-import time
 
-st.set_page_config(page_title="Ad Performance Dashboard", layout="wide")
+from streamlit_autorefresh import st_autorefresh
 
+# Page configuration
+st.set_page_config(page_title="📊 Live Ad Performance Dashboard", layout="wide")
 st.title("📊 Live Ad Performance Dashboard")
+
+# Autorefresh every 10 seconds
+st_autorefresh(interval=10 * 1000, key="data_refresh")
 
 # Load feedback data
 LOG_PATH = "data/processed/logs.csv"
 
-# Autorefresh every 10 seconds
-from streamlit_autorefresh import st_autorefresh
-st_autorefresh(interval=10 * 1000, key="data_refresh")
-
-# Load logs
-if os.path.exists(LOG_PATH):
-    df = pd.read_csv(LOG_PATH)
-else:
+if not os.path.exists(LOG_PATH):
     st.warning("No interactions logged yet.")
     st.stop()
 
-# Basic validation
+df = pd.read_csv(LOG_PATH)
+
+# Validate data
 if df.empty:
     st.info("Waiting for users to interact with ads...")
     st.stop()
 
-# Metrics section
+# Safe conversion if timestamp exists
+if "timestamp" in df.columns:
+    df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+    df["date"] = df["timestamp"].dt.date
+else:
+    df["date"] = pd.NaT  # Fill with empty values
+
+# Summary Metrics
 st.subheader("📈 Engagement Summary")
 
 total_interactions = len(df)
-clicks = len(df[df["action"] == "clicked"])
-purchases = len(df[df["action"] == "purchased"])
-ignore = len(df[df["action"] == "ignored"])
+clicks = (df["action"] == "clicked").sum()
+purchases = (df["action"] == "purchased").sum()
+ignored = (df["action"] == "ignored").sum()
 
 col1, col2, col3 = st.columns(3)
 col1.metric("Total Interactions", total_interactions)
@@ -41,7 +47,7 @@ col3.metric("Purchases", purchases)
 
 st.markdown("---")
 
-# Performance by Ad
+# 📊 Performance by Ad
 st.subheader("🏷️ Performance by Ad")
 
 ad_summary = df.groupby("ad_id")["action"].value_counts().unstack().fillna(0)
@@ -50,14 +56,12 @@ ad_summary["Conversion Rate"] = ad_summary.get("purchased", 0) / ad_summary.sum(
 
 st.dataframe(ad_summary.style.format({"CTR": "{:.2%}", "Conversion Rate": "{:.2%}"}))
 
-# Optional: show trend over time
-st.markdown("---")
-st.subheader("📅 Daily Interaction Trends")
+# 🕒 Daily Trends (only if timestamp is available)
+if "timestamp" in df.columns and df["timestamp"].notnull().any():
+    st.markdown("---")
+    st.subheader("📅 Daily Interaction Trends")
 
-df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
-df["date"] = df["timestamp"].dt.date
-
-daily_summary = df.groupby(["date", "action"]).size().unstack().fillna(0)
-
-st.line_chart(daily_summary)
-
+    daily_summary = df.groupby(["date", "action"]).size().unstack().fillna(0)
+    st.line_chart(daily_summary)
+else:
+    st.info("No timestamp data available for trend analysis.")
