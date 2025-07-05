@@ -31,20 +31,31 @@
 
 # feedback/logger.py
 
-import csv
+from datetime import datetime
+import pandas as pd
 import os
 
+LOG_PATH = "data/processed/logs.csv"
+
 def log_interaction(age, device, time_of_day, ad_id, action):
-    os.makedirs("data/processed", exist_ok=True)
-    filepath = "data/processed/logs.csv"
-    
-    file_exists = os.path.exists(filepath)
-    with open(filepath, mode="a", newline="") as file:
-        writer = csv.writer(file)
-        if not file_exists:
-            writer.writerow(["age", "device", "time_of_day", "ad_id", "action", "reward"])
-        
-        # reward: 1 if clicked or purchased, else 0
-        reward = 1 if action in ["clicked", "purchased"] else 0
-        writer.writerow([age, device, time_of_day, ad_id, action, reward])
+    timestamp = datetime.now().isoformat()
+    reward = 1 if action in ["clicked", "purchased"] else 0
+    row = {
+        "age": age,
+        "device": device,
+        "time_of_day": time_of_day,
+        "ad_id": ad_id,
+        "action": action,
+        "reward": reward,
+        "timestamp": timestamp
+    }
+
+    df = pd.DataFrame([row])
+    os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
+
+    if os.path.exists(LOG_PATH):
+        df.to_csv(LOG_PATH, mode='a', header=False, index=False)
+    else:
+        df.to_csv(LOG_PATH, index=False)
+
 
