@@ -70,31 +70,28 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-# app/main.py
 
 import streamlit as st
 import pandas as pd
-import os
 from app.utils import load_ads
 from feedback.logger import log_interaction
 from models.bandit_model import (
     load_or_train_bandit, 
     choose_ad, 
-    get_context_vector, 
     update_bandit
 )
 
 st.set_page_config(page_title="Smart Ad Targeting", layout="centered")
 st.title("📈 AI-Powered Ad Targeting")
 
-# Load data
-# ads_df = load_ads()
+# Load ad data
 ads_df = load_ads("data/raw/sample_ads.csv")
 
+# Feedback data
 feedback_path = "data/processed/logs.csv"
 feedback_df = pd.read_csv(feedback_path) if os.path.exists(feedback_path) else None
 
-# Sidebar – user input
+# --- Sidebar inputs ---
 st.sidebar.header("User Context")
 age = st.sidebar.slider("Age", 18, 65, 30)
 device = st.sidebar.selectbox("Device Type", ["Mobile", "Desktop"])
@@ -106,67 +103,44 @@ user_context = {
     "time_of_day": time_of_day
 }
 
-# # Bandit model
-# context = get_context_vector(user_context)
-# bandit = load_or_train_bandit(ads_df, feedback_df)
-# selected_ad = choose_ad(bandit, ads_df, context)
+# --- Bandit logic ---
 bandit = load_or_train_bandit(ads_df, feedback_df)
 selected_ad = choose_ad(bandit, ads_df, user_context)
 
-# import pandas as pd
-# df = pd.read_csv("data/raw/sample_ads.csv")
-# print(df.columns)
-
-# Show selected ad
+# --- Display Ad ---
 st.subheader("🎯 Recommended Ad")
-# st.write(f"**Ad ID:** {selected_ad['ad_id']}")
-# st.write(f"**Title:** {selected_ad['ad_title']}")
-# st.write(f"**Category:** {selected_ad['description']}")
-# st.write(f"**Description:** {selected_ad['im']}")
-
 st.write(f"**Ad ID:** {selected_ad['ad_id']}")
 st.write(f"**Title:** {selected_ad['title']}")
 st.write(f"**Description:** {selected_ad['description']}")
 st.image(selected_ad["image_url"], use_container_width=True)
 
-
-# Interaction buttons
+# --- Interaction Buttons ---
 st.markdown("### How did you respond to this ad?")
 
 col1, col2, col3 = st.columns(3)
 
+def handle_interaction(action: str):
+    log_interaction(age, device, time_of_day, selected_ad['ad_id'], action)
+    update_bandit({
+        "age": age,
+        "device": device,
+        "time_of_day": time_of_day,
+        "ad_id": selected_ad['ad_id'],
+        "action": action
+    })
+    return action
+
 with col1:
     if st.button("👍 Clicked Ad"):
-        log_interaction(age, device, time_of_day, selected_ad['ad_id'], "clicked")
-        update_bandit({
-            "age": age,
-            "device": device,
-            "time_of_day": time_of_day,
-            "ad_id": selected_ad['ad_id'],
-            "action": "clicked"
-        })
+        handle_interaction("clicked")
         st.success("Interaction logged!")
 
 with col2:
     if st.button("👎 Ignored"):
-        log_interaction(age, device, time_of_day, selected_ad['ad_id'], "ignored")
-        update_bandit({
-            "age": age,
-            "device": device,
-            "time_of_day": time_of_day,
-            "ad_id": selected_ad['ad_id'],
-            "action": "ignored"
-        })
+        handle_interaction("ignored")
         st.info("Interaction logged!")
 
 with col3:
     if st.button("💸 Purchased"):
-        log_interaction(age, device, time_of_day, selected_ad['ad_id'], "purchased")
-        update_bandit({
-            "age": age,
-            "device": device,
-            "time_of_day": time_of_day,
-            "ad_id": selected_ad['ad_id'],
-            "action": "purchased"
-        })
+        handle_interaction("purchased")
         st.success("Purchase logged!")

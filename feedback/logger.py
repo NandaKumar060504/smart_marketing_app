@@ -1,61 +1,39 @@
-# # feedback/logger.py
-# import os
-# import csv
-# from datetime import datetime
-
-# LOG_PATH = "/Users/nandakumart/Nanda_Kumar_T/smart_marketing_app/data/raw/data/raw/sample_ads.csv"
-
-# # Ensure folder exists
-# os.makedirs("data/processed", exist_ok=True)
-
-# def log_interaction(user_context, ad, price, action):
-#     log_data = {
-#         "timestamp": datetime.now().isoformat(),
-#         "age": user_context["age"],
-#         "device": user_context["device"],
-#         "time_of_day": user_context["time_of_day"],
-#         "ad_id": ad["ad_id"],
-#         "ad_title": ad["title"],
-#         "price": price,
-#         "action": action
-#     }
-
-#     # Write header if file is empty
-#     write_header = not os.path.exists(LOG_PATH)
-
-#     with open(LOG_PATH, mode="a", newline="") as file:
-#         writer = csv.DictWriter(file, fieldnames=log_data.keys())
-#         if write_header:
-#             writer.writeheader()
-#         writer.writerow(log_data)
-
 # feedback/logger.py
 
-from datetime import datetime
-import pandas as pd
+import firebase_admin
+from firebase_admin import credentials, db
+import datetime
 import os
+import json
 
-LOG_PATH = "data/processed/logs.csv"
+# Load credentials from Streamlit secrets if deployed
+if "firebase_key" in os.environ or os.path.exists("firebase_key.json"):
+    if not firebase_admin._apps:
+        try:
+            if "firebase_key" in os.environ:
+                firebase_json = json.loads(os.environ["firebase_key"])
+                cred = credentials.Certificate(firebase_json)
+            else:
+                cred = credentials.Certificate("firebase_key.json")
+
+            firebase_admin.initialize_app(cred, {
+                'databaseURL': 'https://smart-marketing-app-2a2ea-default-rtdb.firebaseio.com/'
+            })
+        except Exception as e:
+            print(f"Firebase init error: {e}")
 
 def log_interaction(age, device, time_of_day, ad_id, action):
-    timestamp = datetime.now().isoformat()
-    reward = 1 if action in ["clicked", "purchased"] else 0
-    row = {
+    data = {
         "age": age,
         "device": device,
         "time_of_day": time_of_day,
         "ad_id": ad_id,
         "action": action,
-        "reward": reward,
-        "timestamp": timestamp
+        "reward": 1 if action in ["clicked", "purchased"] else 0,
+        "timestamp": datetime.datetime.utcnow().isoformat()
     }
-
-    df = pd.DataFrame([row])
-    os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
-
-    if os.path.exists(LOG_PATH):
-        df.to_csv(LOG_PATH, mode='a', header=False, index=False)
-    else:
-        df.to_csv(LOG_PATH, index=False)
-
-
+    try:
+        ref = db.reference("logs")
+        ref.push(data)
+    except Exception as e:
+        print(f"Failed to log interaction: {e}")

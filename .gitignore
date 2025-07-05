@@ -30,3 +30,7 @@ venv/
 
 # Streamlit cache
 .streamlit/
+venv/
+__pycache__/
+*.pyc
+firebase_key.json

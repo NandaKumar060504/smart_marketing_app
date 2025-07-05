@@ -1,53 +1,54 @@
-import streamlit as st
+# performance.py
+
+import firebase_admin
+from firebase_admin import credentials, db
 import pandas as pd
+import streamlit as st
+import json
 import os
 
-from streamlit_autorefresh import st_autorefresh
-
-# Page configuration
-st.set_page_config(page_title="📊 Live Ad Performance Dashboard", layout="wide")
+st.set_page_config(page_title="Ad Performance Dashboard", layout="wide")
 st.title("📊 Live Ad Performance Dashboard")
 
-# Autorefresh every 10 seconds
-st_autorefresh(interval=10 * 1000, key="data_refresh")
+# Auto-refresh every 10 seconds
+from streamlit_autorefresh import st_autorefresh
+st_autorefresh(interval=10 * 1000, key="refresh")
 
-# Load feedback data
-LOG_PATH = "data/processed/logs.csv"
+# Firebase setup
+if not firebase_admin._apps:
+    try:
+        if "firebase_key" in st.secrets:
+            firebase_json = json.loads(st.secrets["firebase_key"])
+            cred = credentials.Certificate(firebase_json)
+        else:
+            cred = credentials.Certificate("firebase_key.json")
+        firebase_admin.initialize_app(cred, {
+            'databaseURL': 'https://<your-database-name>.firebaseio.com/'
+        })
+    except Exception as e:
+        st.error(f"Firebase connection failed: {e}")
+        st.stop()
 
-if not os.path.exists(LOG_PATH):
-    st.warning("No interactions logged yet.")
+# Load data
+ref = db.reference("logs")
+data = ref.get()
+
+if not data:
+    st.warning("No interactions yet.")
     st.stop()
 
-df = pd.read_csv(LOG_PATH)
+df = pd.DataFrame(data.values())
+df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+df["date"] = df["timestamp"].dt.date
 
-# Validate data
-if df.empty:
-    st.info("Waiting for users to interact with ads...")
-    st.stop()
-
-# Safe conversion if timestamp exists
-if "timestamp" in df.columns:
-    df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
-    df["date"] = df["timestamp"].dt.date
-else:
-    df["date"] = pd.NaT  # Fill with empty values
-
-# Summary Metrics
+# Metrics
 st.subheader("📈 Engagement Summary")
-
-total_interactions = len(df)
-clicks = (df["action"] == "clicked").sum()
-purchases = (df["action"] == "purchased").sum()
-ignored = (df["action"] == "ignored").sum()
-
 col1, col2, col3 = st.columns(3)
-col1.metric("Total Interactions", total_interactions)
-col2.metric("Clicks", clicks)
-col3.metric("Purchases", purchases)
+col1.metric("Total", len(df))
+col2.metric("Clicks", (df["action"] == "clicked").sum())
+col3.metric("Purchases", (df["action"] == "purchased").sum())
 
 st.markdown("---")
-
-# 📊 Performance by Ad
 st.subheader("🏷️ Performance by Ad")
 
 ad_summary = df.groupby("ad_id")["action"].value_counts().unstack().fillna(0)
@@ -56,12 +57,8 @@ ad_summary["Conversion Rate"] = ad_summary.get("purchased", 0) / ad_summary.sum(
 
 st.dataframe(ad_summary.style.format({"CTR": "{:.2%}", "Conversion Rate": "{:.2%}"}))
 
-# 🕒 Daily Trends (only if timestamp is available)
-if "timestamp" in df.columns and df["timestamp"].notnull().any():
-    st.markdown("---")
-    st.subheader("📅 Daily Interaction Trends")
+st.markdown("---")
+st.subheader("📅 Daily Interaction Trends")
+daily_summary = df.groupby(["date", "action"]).size().unstack().fillna(0)
+st.line_chart(daily_summary)
 
-    daily_summary = df.groupby(["date", "action"]).size().unstack().fillna(0)
-    st.line_chart(daily_summary)
-else:
-    st.info("No timestamp data available for trend analysis.")

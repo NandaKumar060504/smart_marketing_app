@@ -3,3 +3,4 @@ age,device,time_of_day,ad_id,action,reward,timestamp
 30,Mobile,Morning,26,ignored,0,2025-07-05T12:37:30.262420
 30,Mobile,Morning,27,purchased,1,2025-07-05T12:37:31.603139
 30,Mobile,Morning,28,clicked,1,2025-07-05T12:38:42.028850
+30,Mobile,Morning,29,clicked,1,2025-07-05T12:40:43.537757

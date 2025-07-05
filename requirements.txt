@@ -47,3 +47,7 @@ tornado==6.5.1
 typing_extensions==4.14.0
 tzdata==2025.2
 urllib3==2.5.0
+# For Firebase Realtime Database
+firebase-admin
+# Optional but helpful
+python-dotenv  # For loading env vars locally (if needed)
