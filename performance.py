@@ -7,12 +7,43 @@ import streamlit as st
 import json
 import os
 
+
+
 st.set_page_config(page_title="Ad Performance Dashboard", layout="wide")
 st.title("📊 Live Ad Performance Dashboard")
 
 # Auto-refresh every 10 seconds
 from streamlit_autorefresh import st_autorefresh
 st_autorefresh(interval=10 * 1000, key="refresh")
+
+import firebase_admin
+from firebase_admin import credentials, db
+import streamlit as st
+import json
+
+def initialize_firebase():
+    if not firebase_admin._apps:
+        try:
+            firebase_json = {
+                "type": st.secrets["firebase"]["type"],
+                "project_id": st.secrets["firebase"]["project_id"],
+                "private_key_id": st.secrets["firebase"]["private_key_id"],
+                "private_key": st.secrets["firebase"]["private_key"],
+                "client_email": st.secrets["firebase"]["client_email"],
+                "client_id": st.secrets["firebase"]["client_id"],
+                "auth_uri": st.secrets["firebase"]["auth_uri"],
+                "token_uri": st.secrets["firebase"]["token_uri"],
+                "auth_provider_x509_cert_url": st.secrets["firebase"]["auth_provider_x509_cert_url"],
+                "client_x509_cert_url": st.secrets["firebase"]["client_x509_cert_url"],
+                "universe_domain": st.secrets["firebase"]["universe_domain"]
+            }
+            cred = credentials.Certificate(firebase_json)
+            firebase_admin.initialize_app(cred, {
+                'databaseURL': 'https://smart-marketing-app-2a2ea-default-rtdb.firebaseio.com/'
+            })
+        except Exception as e:
+            st.error(f"Firebase connection failed: {e}")
+initialize_firebase()
 
 # Firebase setup
 if not firebase_admin._apps:
