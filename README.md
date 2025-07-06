@@ -94,11 +94,11 @@ streamlit run app/main.py
 
 ## 👨‍💻 Authors
 
-- Nanda Kumar T (https://github.com/yourusername)  
+- Nanda Kumar T (https://github.com/NandaKumar060504/)  
   B.Tech Computer Science and Engineering, PES University  
   Built as part of Texpidition Hackathon
 
-- Manu Narayan Hegde ()
+- Manu Narayan Hegde (https://github.com/username)
   B.Tech Computer Science and Engineering, PES University  
   Built as part of Texpidtion Hackthon
 ---
