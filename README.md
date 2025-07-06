@@ -6,12 +6,6 @@
 
 An AI-powered web app that recommends personalized advertisements and optimal pricing using contextual bandits and Q-learning. Built with **Streamlit** for a seamless, interactive user experience.
 
----
-
-## 🖼️ App Preview
-
-<img src="assets/app_preview.png" alt="App Screenshot" width="800"/>  
-<!-- Replace with your actual screenshot or GIF -->
 
 ---
 
@@ -70,5 +64,44 @@ python -m venv venv
 source venv/bin/activate   # Windows: venv\Scripts\activate
 
 3.Install Dependencies
+pip install -r requirements.txt
+
+4. Run the App
+streamlit run app/main.py
+
+## 📊 Performance & Benchmarking
+
+- Q-learning was trained in a simulated retail environment to maximize cumulative revenue.
+- Evaluation scripts (`performance.py` & `analysis.py`) generate:
+  - 📈 **Cumulative Reward Plot**
+  - 📉 **Average Reward per Episode**
+- The contextual bandit model learns in real-time from user click behavior (CTR), optimizing ad delivery dynamically.
+- Benchmarking shows improved click-through rates over random baseline strategies.
+
+---
+
+## 🔮 Future Improvements
+
+- Upgrade to more advanced contextual bandit algorithms (e.g., LinUCB, Thompson Sampling)
+- Integrate deep reinforcement learning for continuous and personalized pricing
+- Add user authentication and session tracking
+- Cloud-based dataset and logging with Firebase or Supabase
+- Real-time analytics and admin dashboards
+- Mobile responsiveness and UI enhancements
+- GDPR-compliant user data storage and opt-in management
+
+---
+
+## 👨‍💻 Authors
+
+- Nanda Kumar T (https://github.com/yourusername)  
+  B.Tech Computer Science and Engineering, PES University  
+  Built as part of Texpidition Hackathon
+
+- Manu Narayan Hegde ()
+  B.Tech Computer Science and Engineering, PES University  
+  Built as part of Texpidtion Hackthon
+---
+
 
 
