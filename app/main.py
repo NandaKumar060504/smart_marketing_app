@@ -146,8 +146,14 @@ with col3:
         handle_interaction("purchased")
         st.success("Purchase logged!")
 
+
 # --- Dynamic Pricing ---
 st.markdown("---")
 st.subheader("💡 Recommended Dynamic Price")
 recommended_price = get_optimal_price(age, device, time_of_day)
-st.success(f"💰 Optimal Price: ₹{recommended_price}")
+
+if isinstance(recommended_price, str) and "No data" in recommended_price:
+    st.warning(f"⚠️ {recommended_price} for: {age}, {device}, {time_of_day}")
+else:
+    st.success(f"💰 Optimal Price: ₹{recommended_price}")
+
