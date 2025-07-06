@@ -7,19 +7,12 @@ import streamlit as st
 import json
 import os
 
-
-
 st.set_page_config(page_title="Ad Performance Dashboard", layout="wide")
 st.title("📊 Live Ad Performance Dashboard")
 
 # Auto-refresh every 10 seconds
 from streamlit_autorefresh import st_autorefresh
 st_autorefresh(interval=10 * 1000, key="refresh")
-
-import firebase_admin
-from firebase_admin import credentials, db
-import streamlit as st
-import json
 
 def initialize_firebase():
     if not firebase_admin._apps:
@@ -44,21 +37,6 @@ def initialize_firebase():
         except Exception as e:
             st.error(f"Firebase connection failed: {e}")
 initialize_firebase()
-
-# Firebase setup
-if not firebase_admin._apps:
-    try:
-        if "firebase_key" in st.secrets:
-            firebase_json = json.loads(st.secrets["firebase_key"])
-            cred = credentials.Certificate(firebase_json)
-        else:
-            cred = credentials.Certificate("firebase_key.json")
-        firebase_admin.initialize_app(cred, {
-            'databaseURL': 'https://<your-database-name>.firebaseio.com/'
-        })
-    except Exception as e:
-        st.error(f"Firebase connection failed: {e}")
-        st.stop()
 
 # Load data
 ref = db.reference("logs")
@@ -92,4 +70,3 @@ st.markdown("---")
 st.subheader("📅 Daily Interaction Trends")
 daily_summary = df.groupby(["date", "action"]).size().unstack().fillna(0)
 st.line_chart(daily_summary)
-

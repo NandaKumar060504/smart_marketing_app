@@ -80,6 +80,7 @@ from models.bandit_model import (
     choose_ad, 
     update_bandit
 )
+from predict_price import get_optimal_price
 
 st.set_page_config(page_title="Smart Ad Targeting", layout="centered")
 st.title("📈 AI-Powered Ad Targeting")
@@ -144,3 +145,9 @@ with col3:
     if st.button("💸 Purchased"):
         handle_interaction("purchased")
         st.success("Purchase logged!")
+
+# --- Dynamic Pricing ---
+st.markdown("---")
+st.subheader("💡 Recommended Dynamic Price")
+recommended_price = get_optimal_price(age, device, time_of_day)
+st.success(f"💰 Optimal Price: ₹{recommended_price}")
