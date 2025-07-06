@@ -98,7 +98,7 @@ streamlit run app/main.py
   B.Tech Computer Science and Engineering, PES University  
   Built as part of Texpidition Hackathon
 
-- Manu Narayan Hegde (https://github.com/username)
+- Manu Narayan Hegde (https://github.com/Manuhegde1309)
   B.Tech Computer Science and Engineering, PES University  
   Built as part of Texpidtion Hackthon
 ---
