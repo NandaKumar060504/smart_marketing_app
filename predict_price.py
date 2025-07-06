@@ -21,6 +21,7 @@ def get_optimal_price(age, device, time_of_day):
     state = (age_bucket, device, time_of_day)
 
     if state in Q_table:
-        return max(Q_table[state], key=Q_table[state].get)
+        best_price = max(Q_table[state], key=Q_table[state].get)
+        return int(best_price)  # 👈 Ensure it's a standard Python int
     else:
         return "No data for this user context"
