@@ -29,7 +29,9 @@ def initialize_firebase():
         except Exception as e:
             print(f"Firebase initialization failed: {e}")
 
-def log_interaction(age, device, time_of_day, ad_id, action):
+# feedback/logger.py
+
+def log_interaction(age, device, time_of_day, ad_id, action, price):
     initialize_firebase()
 
     data = {
@@ -38,6 +40,7 @@ def log_interaction(age, device, time_of_day, ad_id, action):
         "time_of_day": time_of_day,
         "ad_id": ad_id,
         "action": action,
+        "price": price,
         "reward": 1 if action in ["clicked", "purchased"] else 0,
         "timestamp": datetime.datetime.utcnow().isoformat()
     }
@@ -48,4 +51,5 @@ def log_interaction(age, device, time_of_day, ad_id, action):
         print("Interaction successfully logged.")
     except Exception as e:
         print(f"Failed to log interaction: {e}")
+
 

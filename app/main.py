@@ -120,8 +120,10 @@ st.markdown("### How did you respond to this ad?")
 
 col1, col2, col3 = st.columns(3)
 
+# inside main.py, modify handle_interaction like so:
+
 def handle_interaction(action: str):
-    log_interaction(age, device, time_of_day, selected_ad['ad_id'], action)
+    log_interaction(age, device, time_of_day, selected_ad['ad_id'], action, recommended_price if isinstance(recommended_price, int) else 179)
     update_bandit({
         "age": age,
         "device": device,
@@ -130,6 +132,7 @@ def handle_interaction(action: str):
         "action": action
     })
     return action
+
 
 with col1:
     if st.button("👍 Clicked Ad"):
