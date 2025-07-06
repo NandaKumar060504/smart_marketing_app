@@ -120,7 +120,13 @@ if not data:
 df = pd.DataFrame(data.values())
 df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
 df["date"] = df["timestamp"].dt.date
-df["price"] = pd.to_numeric(df.get("price", 0), errors="coerce").fillna(0)
+# df["price"] = pd.to_numeric(df.get("price", 0), errors="coerce").fillna(0)
+# --- Handle Price Column Safely ---
+if "price" in df.columns:
+    df["price"] = pd.to_numeric(df["price"], errors="coerce").fillna(0)
+else:
+    df["price"] = 0
+
 
 # --- Metrics ---
 st.subheader("📈 Engagement Summary")

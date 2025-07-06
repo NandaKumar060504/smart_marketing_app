@@ -1,71 +1,100 @@
+
 # import sys
 # import os
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-# import pandas as pd
+
 # import streamlit as st
-# from utils import load_ads, pick_random_ad, get_current_context
+# import pandas as pd
+# from app.utils import load_ads
 # from feedback.logger import log_interaction
-# # ...existing code...
 # from models.bandit_model import (
 #     load_or_train_bandit, 
 #     choose_ad, 
-#     get_context, 
 #     update_bandit
 # )
+# from predict_price import get_optimal_price
 
+# st.set_page_config(page_title="Smart Ad Targeting", layout="centered")
+# st.title("📈 AI-Powered Ad Targeting")
 
-
-# st.set_page_config(page_title="Smart Ad Targeting", layout="wide")
-
-# # Load ads
+# # Load ad data
 # ads_df = load_ads("data/raw/sample_ads.csv")
 
-# st.title("🧠 AI-Powered Marketing Demo")
-
-# # Simulate User
-# st.sidebar.header("👤 Simulated User Profile")
-# age = st.sidebar.slider("Age", 18, 65, 30)
-# device = st.sidebar.selectbox("Device", ["Mobile", "Desktop", "Tablet"])
-# time_of_day = st.sidebar.selectbox("Time of Day", ["Morning", "Afternoon", "Evening", "Night"])
-
-# user_context = get_current_context(age, device, time_of_day)
-
-# # # Select an ad
-# # selected_ad = pick_random_ad(ads_df)
-# # Load feedback if it exists
+# # Feedback data
 # feedback_path = "data/processed/logs.csv"
 # feedback_df = pd.read_csv(feedback_path) if os.path.exists(feedback_path) else None
 
-# context = get_context(user_context)
+# # --- Sidebar inputs ---
+# st.sidebar.header("User Context")
+# age = st.sidebar.slider("Age", 18, 65, 30)
+# device = st.sidebar.selectbox("Device Type", ["Mobile", "Desktop"])
+# time_of_day = st.sidebar.selectbox("Time of Day", ["Morning", "Afternoon", "Evening"])
+
+# user_context = {
+#     "age": age,
+#     "device": device,
+#     "time_of_day": time_of_day
+# }
+
+# # --- Dynamic Pricing (MOVED UP) ---
+# recommended_price = get_optimal_price(age, device, time_of_day)
+
+# # --- Bandit logic ---
 # bandit = load_or_train_bandit(ads_df, feedback_df)
-# selected_ad = choose_ad(bandit, ads_df, context)
+# selected_ad = choose_ad(bandit, ads_df, user_context)
 
-# # Show Ad
+# # --- Display Ad ---
 # st.subheader("🎯 Recommended Ad")
-# st.image(selected_ad['image_url'], width=150)
-# st.markdown(f"**{selected_ad['title']}**")
-# st.write(selected_ad['description'])
+# st.write(f"**Ad ID:** {selected_ad['ad_id']}")
+# st.write(f"**Title:** {selected_ad['title']}")
+# st.write(f"**Description:** {selected_ad['description']}")
+# st.image(selected_ad["image_url"], use_container_width=True)
 
-# # Placeholder price
-# price = 49.99  # this will later be dynamic using RL
+# # --- Interaction Buttons ---
+# st.markdown("### How did you respond to this ad?")
 
-# st.markdown(f"💰 **Special Offer Price:** ${price}")
-
-# # Feedback Buttons
-# st.markdown("### What does the user do?")
 # col1, col2, col3 = st.columns(3)
+
+# def handle_interaction(action: str):
+#     log_interaction(
+#         age, 
+#         device, 
+#         time_of_day, 
+#         selected_ad['ad_id'], 
+#         action, 
+#         recommended_price if isinstance(recommended_price, int) else 179
+#     )
+#     update_bandit({
+#         "age": age,
+#         "device": device,
+#         "time_of_day": time_of_day,
+#         "ad_id": selected_ad['ad_id'],
+#         "action": action
+#     })
+#     return action
+
 # with col1:
-#     if st.button("✅ Clicked Ad"):
-#         log_interaction(user_context, selected_ad, price, action="clicked")
-#         st.success("Logged: Clicked Ad")
+#     if st.button("👍 Clicked Ad"):
+#         handle_interaction("clicked")
+#         st.success("Interaction logged!")
+
 # with col2:
-#     if st.button("❌ Ignored Ad"):
-#         log_interaction(user_context, selected_ad, price, action="ignored")
-#         st.info("Logged: Ignored Ad")
+#     if st.button("👎 Ignored"):
+#         handle_interaction("ignored")
+#         st.info("Interaction logged!")
+
 # with col3:
-#     if st.button("🛒 Purchased"):
-#         log_interaction(user_context, selected_ad, price, action="purchased")
-#         st.success("Logged: Purchase Made")
+#     if st.button("💸 Purchased"):
+#         handle_interaction("purchased")
+#         st.success("Purchase logged!")
+
+# # --- Show Recommended Price Below Interaction ---
+# st.markdown("---")
+# st.subheader("💡 Recommended Dynamic Price")
+# if isinstance(recommended_price, str) and "No data" in recommended_price:
+#     st.warning(f"⚠️ {recommended_price} for: {age}, {device}, {time_of_day}")
+# else:
+#     st.success(f"💰 Optimal Price: ₹{recommended_price}")
 
 import sys
 import os
@@ -75,28 +104,23 @@ import streamlit as st
 import pandas as pd
 from app.utils import load_ads
 from feedback.logger import log_interaction
-from models.bandit_model import (
-    load_or_train_bandit, 
-    choose_ad, 
-    update_bandit
-)
+from models.bandit_model import load_or_train_bandit, choose_ad, update_bandit
 from predict_price import get_optimal_price
 
 st.set_page_config(page_title="Smart Ad Targeting", layout="centered")
 st.title("📈 AI-Powered Ad Targeting")
 
-# Load ad data
+# --- Load Data ---
 ads_df = load_ads("data/raw/sample_ads.csv")
-
-# Feedback data
 feedback_path = "data/processed/logs.csv"
 feedback_df = pd.read_csv(feedback_path) if os.path.exists(feedback_path) else None
 
-# --- Sidebar inputs ---
-st.sidebar.header("User Context")
-age = st.sidebar.slider("Age", 18, 65, 30)
-device = st.sidebar.selectbox("Device Type", ["Mobile", "Desktop"])
-time_of_day = st.sidebar.selectbox("Time of Day", ["Morning", "Afternoon", "Evening"])
+# --- Sidebar Inputs ---
+with st.sidebar:
+    st.header("🧑‍💻 User Context")
+    age = st.slider("Age", 18, 65, 30)
+    device = st.selectbox("Device Type", ["Mobile", "Desktop"])
+    time_of_day = st.selectbox("Time of Day", ["Morning", "Afternoon", "Evening"])
 
 user_context = {
     "age": age,
@@ -104,26 +128,21 @@ user_context = {
     "time_of_day": time_of_day
 }
 
-# --- Bandit logic ---
+# --- Bandit Logic ---
 bandit = load_or_train_bandit(ads_df, feedback_df)
 selected_ad = choose_ad(bandit, ads_df, user_context)
 
-# --- Display Ad ---
-st.subheader("🎯 Recommended Ad")
-st.write(f"**Ad ID:** {selected_ad['ad_id']}")
-st.write(f"**Title:** {selected_ad['title']}")
-st.write(f"**Description:** {selected_ad['description']}")
-st.image(selected_ad["image_url"], use_container_width=True)
+# --- Dynamic Pricing (before interaction) ---
+recommended_price = get_optimal_price(age, device, time_of_day)
 
-# --- Interaction Buttons ---
-st.markdown("### How did you respond to this ad?")
-
-col1, col2, col3 = st.columns(3)
-
-# inside main.py, modify handle_interaction like so:
-
+# --- Interaction Handler ---
 def handle_interaction(action: str):
-    log_interaction(age, device, time_of_day, selected_ad['ad_id'], action, recommended_price if isinstance(recommended_price, int) else 179)
+    log_interaction(
+        age, device, time_of_day,
+        selected_ad['ad_id'],
+        action,
+        recommended_price if isinstance(recommended_price, int) else 179
+    )
     update_bandit({
         "age": age,
         "device": device,
@@ -133,30 +152,43 @@ def handle_interaction(action: str):
     })
     return action
 
+# --- Display Ad Section ---
+st.markdown("## 🎯 Recommended Advertisement")
+
+with st.container():
+    st.markdown(f"**🆔 Ad ID:** `{selected_ad['ad_id']}`")
+    st.markdown(f"### 📢 {selected_ad['title']}")
+    st.markdown(f"💬 {selected_ad['description']}")
+    try:
+        st.image(selected_ad["image_url"], caption="Ad Preview", use_container_width=True)
+    except:
+        st.warning("⚠️ Ad image could not be loaded.")
+
+# --- User Interaction ---
+st.markdown("### 🧠 How did you respond to this ad?")
+col1, col2, col3 = st.columns(3)
 
 with col1:
     if st.button("👍 Clicked Ad"):
         handle_interaction("clicked")
-        st.success("Interaction logged!")
+        st.success("✅ Click logged!")
 
 with col2:
     if st.button("👎 Ignored"):
         handle_interaction("ignored")
-        st.info("Interaction logged!")
+        st.info("📝 Ignored logged.")
 
 with col3:
     if st.button("💸 Purchased"):
         handle_interaction("purchased")
-        st.success("Purchase logged!")
+        st.success("🎉 Purchase logged!")
 
-
-# --- Dynamic Pricing ---
+# --- Dynamic Pricing Result ---
 st.markdown("---")
-st.subheader("💡 Recommended Dynamic Price")
-recommended_price = get_optimal_price(age, device, time_of_day)
-
+st.markdown("### 💡 Recommended Dynamic Price")
 if isinstance(recommended_price, str) and "No data" in recommended_price:
-    st.warning(f"⚠️ {recommended_price} for: {age}, {device}, {time_of_day}")
+    st.warning(f"⚠️ {recommended_price} for: Age={age}, Device={device}, Time={time_of_day}")
 else:
     st.success(f"💰 Optimal Price: ₹{recommended_price}")
+
 
